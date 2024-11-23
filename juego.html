@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de la Serpiente</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Fondo animado dinámico */
+        body {
+            margin: 0;
+            background: linear-gradient(120deg, #1abc9c, #3498db, #9b59b6, #e67e22);
+            background-size: 300% 300%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header, footer {
+            background: rgba(0, 0, 0, 0.8);
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        footer {
+            margin-top: auto;
+            width: 100%;
+        }
+
+        /* Área del juego */
+        #areaJuego {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 500px;
+            margin: 20px auto;
+            border: 5px solid #fff;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5));
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+        }
+
+        canvas {
+            display: block;
+            background-color: #f0f0f0; /* Fondo claro */
+            border: 3px solid #fff;
+            border-radius: 10px;
+        }
+
+        /* Tablero de puntuaciones */
+        #tableroPuntuaciones {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .list-group-item {
+            background: rgba(255, 255, 255, 0.8) !important;
+            color: #000 !important;
+        }
+
+        .btn-custom {
+            background-color: #f39c12;
+            border-color: #f39c12;
+            color: #fff;
+            width: 100%;
+        }
+
+        .btn-custom:hover {
+            background-color: #d35400;
+            border-color: #d35400;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Juego de la Serpiente</h1>
+        <p>¡Come frutas para ganar puntos y romper tú record!</p>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Área del juego -->
+            <div class="col-lg-8 col-md-10 col-sm-12">
+                <div id="areaJuego">
+                    <canvas id="lienzoJuego" width="400" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Tablero de puntuaciones -->
+            <div class="col-lg-4 col-md-10 col-sm-12 mt-4">
+                <div id="tableroPuntuaciones">
+                    <h3>Tabla de Puntuaciones</h3>
+                    <ul id="listaPuntuaciones" class="list-group mb-3">
+                        <!-- Las puntuaciones se irán añadiendo aquí -->
+                    </ul>
+                    <h4 id="recordMaximo">Récord Máximo: 0</h4>
+                    <button id="botonIniciar" class="btn btn-custom mt-3">Iniciar Juego</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Juego de la Serpiente. Todos los derechos reservados.</p>
+        <p>Desarrollado por <strong>pablo_fernando26 - - pgnzz - -</strong> 
+            <i class="fas fa-code" style="color: #f39c12;"></i>
+        </p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById("lienzoJuego");
+        const ctx = canvas.getContext("2d");
+        const listaPuntuaciones = document.getElementById("listaPuntuaciones");
+        const botonIniciar = document.getElementById("botonIniciar");
+        const recordMaximoDisplay = document.getElementById("recordMaximo");
+    
+        let serpiente, comida, dx, dy, puntuacion, intervalo, velocidad, recordMaximo = 0;
+    
+        function iniciarJuego() {
+            serpiente = [{x: 200, y: 200}];
+            dx = 10;
+            dy = 0;
+            puntuacion = 0;
+            velocidad = 200;
+            comida = crearComida();
+            if (intervalo) clearInterval(intervalo);
+            intervalo = setInterval(cicloJuego, velocidad);
+        }
+    
+        function cicloJuego() {
+            limpiarLienzo();
+            dibujarComida();
+            moverSerpiente();
+            dibujarSerpiente();
+            if (verificarColision()) {
+                alert(`¡Has perdido! Puntuación obtenida: ${puntuacion}`);
+                actualizarPuntuaciones(puntuacion);
+                clearInterval(intervalo);
+            }
+        }
+    
+        function limpiarLienzo() {
+            // Borrar el lienzo completamente para no dejar rastros
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar la cuadrícula
+            for (let x = 0; x < canvas.width; x += 10) {
+                for (let y = 0; y < canvas.height; y += 10) {
+                    ctx.strokeStyle = '#ddd'; // Color de las líneas de la cuadrícula
+                    ctx.strokeRect(x, y, 10, 10);
+                }
+            }
+        }
+    
+        function dibujarSerpiente() {
+            serpiente.forEach(parte => {
+                ctx.fillStyle = "#2ecc71";
+                ctx.fillRect(parte.x, parte.y, 10, 10);
+                ctx.strokeStyle = "#27ae60";
+                ctx.strokeRect(parte.x, parte.y, 10, 10);
+            });
+        }
+    
+        function moverSerpiente() {
+            const cabeza = {x: serpiente[0].x + dx, y: serpiente[0].y + dy};
+            serpiente.unshift(cabeza);
+            if (cabeza.x === comida.x && cabeza.y === comida.y) {
+                puntuacion += 10;
+                comida = crearComida();
+                velocidad = Math.max(50, velocidad - 10); // Aumenta la velocidad
+                clearInterval(intervalo);
+                intervalo = setInterval(cicloJuego, velocidad);
+            } else {
+                serpiente.pop();
+            }
+        }
+    
+        function cambiarDireccion(event) {
+            const tecla = event.keyCode;
+            const IZQUIERDA = 37, ARRIBA = 38, DERECHA = 39, ABAJO = 40;
+    
+            const vaArriba = dy === -10;
+            const vaAbajo = dy === 10;
+            const vaDerecha = dx === 10;
+            const vaIzquierda = dx === -10;
+    
+            if (tecla === IZQUIERDA && !vaDerecha) {
+                dx = -10;
+                dy = 0;
+            }
+            if (tecla === ARRIBA && !vaAbajo) {
+                dx = 0;
+                dy = -10;
+            }
+            if (tecla === DERECHA && !vaIzquierda) {
+                dx = 10;
+                dy = 0;
+            }
+            if (tecla === ABAJO && !vaArriba) {
+                dx = 0;
+                dy = 10;
+            }
+        }
+    
+        function verificarColision() {
+            for (let i = 4; i < serpiente.length; i++) {
+                if (serpiente[i].x === serpiente[0].x && serpiente[i].y === serpiente[0].y) return true;
+            }
+            const chocaParedIzquierda = serpiente[0].x < 0;
+            const chocaParedDerecha = serpiente[0].x > canvas.width - 10;
+            const chocaParedArriba = serpiente[0].y < 0;
+            const chocaParedAbajo = serpiente[0].y > canvas.height - 10;
+            return chocaParedIzquierda || chocaParedDerecha || chocaParedArriba || chocaParedAbajo;
+        }
+    
+        function crearComida() {
+            let x = Math.floor(Math.random() * 40) * 10;
+            let y = Math.floor(Math.random() * 40) * 10;
+            return {x, y};
+        }
+    
+        function dibujarComida() {
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(comida.x, comida.y, 10, 10);
+            ctx.strokeStyle = "#c0392b";
+            ctx.strokeRect(comida.x, comida.y, 10, 10);
+        }
+    
+        function actualizarPuntuaciones(puntos) {
+            const li = document.createElement("li");
+            li.textContent = `Puntuación: ${puntos}`;
+            li.classList.add("list-group-item");
+            listaPuntuaciones.prepend(li);
+            if (puntos > recordMaximo) {
+                recordMaximo = puntos;
+                recordMaximoDisplay.textContent = `Récord Máximo: ${recordMaximo}`;
+            }
+        }
+    
+        botonIniciar.addEventListener("click", iniciarJuego);
+        document.addEventListener("keydown", function(event) {
+            event.preventDefault(); // Prevenir el desplazamiento de la página
+            cambiarDireccion(event);
+        });
+    </script>
+    
+</body>
+</html>
