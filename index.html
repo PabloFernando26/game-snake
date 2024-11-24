@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de la Serpiente</title>
+    <title>🐍Juego de la Serpiente🐍</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Fondo animado dinámico */
@@ -68,6 +68,13 @@
         .list-group-item {
             background: rgba(255, 255, 255, 0.8) !important;
             color: #000 !important;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
 
         .btn-custom {
@@ -82,13 +89,19 @@
             border-color: #d35400;
         }
 
+        /* Estilo para el título de la tabla */
+        h3 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <header>
-        <h1>Juego de la Serpiente</h1>
-        <p>¡Come frutas para ganar puntos y romper tú record!</p>
+        <h1>🐍Juego de la Serpiente🐍</h1>
+        <p>¡Come frutas 🍎 para ganar puntos y romper tú record🎮!</p>
     </header>
 
     <!-- Contenido principal -->
@@ -104,11 +117,11 @@
             <!-- Tablero de puntuaciones -->
             <div class="col-lg-4 col-md-10 col-sm-12 mt-4">
                 <div id="tableroPuntuaciones">
-                    <h3>Tabla de Puntuaciones</h3>
+                    <h3>🏆Tabla de Puntuaciones🏆</h3>
                     <ul id="listaPuntuaciones" class="list-group mb-3">
                         <!-- Las puntuaciones se irán añadiendo aquí -->
                     </ul>
-                    <h4 id="recordMaximo">Récord Máximo: 0</h4>
+                    <h4 id="recordMaximo">⭐Récord Máximo⭐: 0</h4>
                     <button id="botonIniciar" class="btn btn-custom mt-3">Iniciar Juego</button>
                 </div>
             </div>
@@ -117,8 +130,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 Juego de la Serpiente. Todos los derechos reservados.</p>
-        <p>Desarrollado por <strong>pablo_fernando26 - - pgnzz - -</strong> 
+        <p>&copy; 2024 Juego de la Serpiente. Todos los derechos reservados.</p> 
             <i class="fas fa-code" style="color: #f39c12;"></i>
         </p>
     </footer>
@@ -218,47 +230,47 @@
             }
         }
     
-        function verificarColision() {
-            for (let i = 4; i < serpiente.length; i++) {
-                if (serpiente[i].x === serpiente[0].x && serpiente[i].y === serpiente[0].y) return true;
-            }
-            const chocaParedIzquierda = serpiente[0].x < 0;
-            const chocaParedDerecha = serpiente[0].x > canvas.width - 10;
-            const chocaParedArriba = serpiente[0].y < 0;
-            const chocaParedAbajo = serpiente[0].y > canvas.height - 10;
-            return chocaParedIzquierda || chocaParedDerecha || chocaParedArriba || chocaParedAbajo;
-        }
-    
         function crearComida() {
-            let x = Math.floor(Math.random() * 40) * 10;
-            let y = Math.floor(Math.random() * 40) * 10;
-            return {x, y};
+            const x = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+            const y = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+            return {x: x, y: y};
         }
     
         function dibujarComida() {
             ctx.fillStyle = "#e74c3c";
             ctx.fillRect(comida.x, comida.y, 10, 10);
-            ctx.strokeStyle = "#c0392b";
-            ctx.strokeRect(comida.x, comida.y, 10, 10);
         }
     
-        function actualizarPuntuaciones(puntos) {
-            const li = document.createElement("li");
-            li.textContent = `Puntuación: ${puntos}`;
-            li.classList.add("list-group-item");
-            listaPuntuaciones.prepend(li);
-            if (puntos > recordMaximo) {
-                recordMaximo = puntos;
-                recordMaximoDisplay.textContent = `Récord Máximo: ${recordMaximo}`;
+        function verificarColision() {
+            const cabeza = serpiente[0];
+            if (cabeza.x < 0 || cabeza.x >= canvas.width || cabeza.y < 0 || cabeza.y >= canvas.height) {
+                return true;
             }
+            for (let i = 1; i < serpiente.length; i++) {
+                if (serpiente[i].x === cabeza.x && serpiente[i].y === cabeza.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+        function actualizarPuntuaciones(puntuacion) {
+            if (puntuacion > recordMaximo) {
+                recordMaximo = puntuacion;
+                recordMaximoDisplay.textContent = `⭐Récord Máximo⭐: ${recordMaximo}`;
+            }
+    
+            const item = document.createElement("li");
+            item.className = "list-group-item";
+            item.innerHTML = `Puntuación: ${puntuacion} <span class="badge badge-primary">😎</span>`;
+            listaPuntuaciones.appendChild(item);
         }
     
         botonIniciar.addEventListener("click", iniciarJuego);
-        document.addEventListener("keydown", function(event) {
-            event.preventDefault(); // Prevenir el desplazamiento de la página
+        document.addEventListener("keydown", (event) => {
+            event.preventDefault(); // Evitar desplazamiento con las flechas
             cambiarDireccion(event);
         });
     </script>
-    
 </body>
 </html>
